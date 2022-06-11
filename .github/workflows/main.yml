@@ -1,14 +1,42 @@
+name: cloudrun-deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
 
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-name: Deploy a Cloud Run service
-
-
-uses: google-github-actions/deploy-cloudrun@v0.1.0
-with:
-  image: gcr.io/cloudrun/hello
-  service: cloud_run_auth
-  project: ${{ secrets.H1_PROJECT_ID }}
-  credentials: ${{ secrets.GCP_SERVICE_ACC }}
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        service_account_email: ${{ secrets.GCP_EMAIL }}
+        service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+        export_default_credentials: true
+    
+    # Configure Docker with Credentials
+    - name: Configure Docker
+      run: |
+        gcloud auth configure-docker
+      
+    # Build the Docker image
+    - name: Build & Publish
+      run: |
+        gcloud config set project ${{ secrets.GCP_PROJECT }}
+        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
+        gcloud config set run/region us-central1
+      
+    # Deploy the Docker image to the GKE cluster
+    - name: Deploy
+      run: |
+        gcloud run deploy ${{ secrets.GCP_APPLICATION }} --image gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }} \
+        --platform managed \
+        --allow-unauthenticated \
+        --memory 512M
+ 
 
 
