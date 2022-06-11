@@ -1,0 +1,22 @@
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+name: Deploy a Cloud Run service
+id: deploy-service
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ] 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+uses: google-github-actions/deploy-cloudrun@v0.1.0
+with:
+  image: gcr.io/cloudrun/hello
+  service: cloud_run_auth
+  project: ${{ secrets.H1_PROJECT_ID }}
+  credentials: ${{ secrets.GCP_SERVICE_ACC }}
+
+
