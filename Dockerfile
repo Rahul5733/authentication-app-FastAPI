@@ -7,4 +7,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "auth:app","--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "auth:app","--host", "0.0.0.0", "--port", "8080"]
